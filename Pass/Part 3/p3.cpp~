@@ -10,7 +10,7 @@
 #include "llvm/Target/TargetLibraryInfo.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/DebugInfo.h"
-#include <set>
+#include <vector>
 
 using namespace llvm;
 
@@ -23,13 +23,14 @@ namespace {
 
 		//Run for each function
 		virtual bool runOnFunction(Function &F){
-			int refer = 0;			
+			int refer = 0;		
+			int issue = 0;	
 
-   			std::set<Instruction*> instructionList;	//List of instructions
-   			std::set<Instruction*> subList;	//List of instructions
+   			std::vector<Instruction*> instructionList;	//List of instructions
+   			std::vector<Instruction*> subList;	//List of instructions
 			//Put each instruction into list			
 			for(inst_iterator i = inst_begin(F), e = inst_end(F); i != e; ++i){
-       				instructionList.insert(&*i);
+       				instructionList.insert(instructionList.end(), &*i);
    			}
 
 			//While still analyzing instructions
@@ -43,13 +44,13 @@ namespace {
 						//Get all instructions that refer to this value
 						for (Value::use_iterator UI = I1->use_begin(), UE = I1->use_end(); UI != UE; ++UI){
 							 if (Instruction *I2 = dyn_cast<Instruction>(*UI)) {
-								subList.insert(I2);
+								subList.insert(subList.begin(),I2);
 							}
 						}
 					}
 
 					ConstantInt* CI = NULL;
-
+					issue = 0;
 					while (!subList.empty()) {
 						Instruction *I3 = *subList.begin();
 				     		subList.erase(subList.begin());
@@ -58,6 +59,11 @@ namespace {
 						
 						//If not definiton
 						if(I3->getOpcode() != 28){ 
+							//Print name of error
+							if (issue==0){
+								errs()<<I1->getName()<<"\n";
+								issue = 1;
+							}
 							//Get line number
 							if (MDNode *N = I3->getMetadata("dbg")) {
 								DILocation Loc(N);                     
@@ -66,8 +72,14 @@ namespace {
 							}else{
 								errs()<<*I3<<"\n";
 							}
+							
 						}else if(I3->getOpcode() == 28 && I3->getOperand(0)==I1){
-						//Get line number
+							//Print name of error
+							if (issue==0){
+								errs()<<I1->getName()<<"\n";
+								issue = 1;
+							}
+							//Get line number
 							if (MDNode *N = I3->getMetadata("dbg")) {
 								DILocation Loc(N);                     
 								unsigned Line = Loc.getLineNumber();

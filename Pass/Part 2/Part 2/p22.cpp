@@ -42,7 +42,7 @@ namespace {
 					//Get all instructions that refer to this value
 					for (Value::use_iterator UI = I1->use_begin(), UE = I1->use_end(); UI != UE; ++UI){
 						if (Instruction *I2 = dyn_cast<Instruction>(*UI)) {
-						
+							
 							//Check if store insruction that is storing t this variable
 							if (!(I2->getOpcode() == 28 && I2->getOperand(1) == I1)){
 								refer++;

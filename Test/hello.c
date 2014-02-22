@@ -19,19 +19,23 @@ j = 2+i;*/
 
 
 int *k;
-int i = 3+4; 
+int i; 
 int j;
 int z = 4 + 5;
 j = i+z;
 i =8;
 //i = 4;
 j = i;
-k = &i;
-*k = 5;
+//k = &i;
+//*k = 5;
 j=i;
+while(rand()%20==5){
+	j+=i;
+	j =5;
+}
 //z = i;
-printf("%d %d %d", i, j ,z);
-
+//printf("%d %d %d", i, j ,z);
+j = 10;
   return 2;
 }
 

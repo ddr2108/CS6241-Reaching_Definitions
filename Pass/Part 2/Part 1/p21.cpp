@@ -50,16 +50,13 @@ namespace {
 						//Get all instructions that refer to this value
 						for (Value::use_iterator UI = I1->use_begin(), UE = I1->use_end(); UI != UE; ++UI){
 							 if (Instruction *I2 = dyn_cast<Instruction>(*UI)) {
-							errs()<<"\n----"<<*I2;
 								subList.insert(subList.begin(), I2);
 							}
 						}
 					}
-							errs()<<"\n-------------------";
 					ConstantInt* CI = NULL;
 					while (!subList.empty()) {
 						Instruction *I3 = *subList.begin();
-							errs()<<"\n----"<<*I3;
 				     		subList.erase(subList.begin());
 
 						if(I3->getOpcode() == 28){ 
@@ -72,7 +69,6 @@ namespace {
 								break;
 							}
 						}else if(I3->getOpcode() == 27){
-							//errs()<<"\n---------------"<<*I3;
 							if (CI!=NULL){
 								changed = 1;
 								changes+=I3->getNumUses();
@@ -87,7 +83,6 @@ namespace {
 						}
 
 					}
-							errs()<<"\n=========";
 
 				}	
 
