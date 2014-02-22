@@ -28,13 +28,14 @@ i =8;
 j = i;
 //k = &i;
 //*k = 5;
-j=i;
+j=10;
 while(rand()%20==5){
 	j+=i;
 	j =5;
 }
 //z = i;
 //printf("%d %d %d", i, j ,z);
+i = 1;
 j = 10;
   return 2;
 }

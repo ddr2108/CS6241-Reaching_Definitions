@@ -21,8 +21,7 @@ entry:
   store i32 8, i32* %i, align 4
   %2 = load i32* %i, align 4
   store i32 %2, i32* %j, align 4
-  %3 = load i32* %i, align 4
-  store i32 %3, i32* %j, align 4
+  store i32 10, i32* %j, align 4
   br label %while.cond
 
 while.cond:                                       ; preds = %while.body, %entry
@@ -32,14 +31,15 @@ while.cond:                                       ; preds = %while.body, %entry
   br i1 %cmp, label %while.body, label %while.end
 
 while.body:                                       ; preds = %while.cond
-  %4 = load i32* %i, align 4
-  %5 = load i32* %j, align 4
-  %add1 = add nsw i32 %5, %4
+  %3 = load i32* %i, align 4
+  %4 = load i32* %j, align 4
+  %add1 = add nsw i32 %4, %3
   store i32 %add1, i32* %j, align 4
   store i32 5, i32* %j, align 4
   br label %while.cond
 
 while.end:                                        ; preds = %while.cond
+  store i32 1, i32* %i, align 4
   store i32 10, i32* %j, align 4
   ret i32 2
 }
