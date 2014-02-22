@@ -7,7 +7,17 @@ return 2;
 }*/
 int asd;
 int main() {
+int i;
 int *k;
+int j;
+k = &i;
+i =7;
+j = 2+i;
+
+
+
+
+/*int *k;
 int i =3+4; 
 int j;
 int z = 4 + 5;
@@ -19,14 +29,8 @@ k = &i;
 *k = 5;
 j=i;
 //z = i;
-printf("%d %d %d %d", i, j , k ,z);
-/*
-z = 5;
+printf("%d %d %d %d", i, j , k ,z);*/
 
-k = 2 + 4;
-i =k;
-j = &i;
-j = 6;*/
   return 2;
 }
 

@@ -1,4 +1,4 @@
-clang++ -c p22.cpp `llvm-config --cxxflags`;
-clang++ -shared -o pass.so p22.o `llvm-config --ldflags`
-opt -load ./pass.so -p22 <../../../Test/hello.bc> /dev/null
+clang++ -c p3.cpp `llvm-config --cxxflags`;
+clang++ -shared -o pass.so p3.o `llvm-config --ldflags`
+opt -load ./pass.so -p3 <../../Test/hello.bc> /dev/null
 
