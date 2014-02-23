@@ -37,7 +37,7 @@ namespace {
 			std::vector<StringRef> def;
 			std::vector<unsigned> lineNum;
 			std::vector<unsigned> realLineNum;
-			std::set<Loop*> loopsVisited;
+			std::set<int> instVisited;
 			//Put each instruction into list			
 			for(inst_iterator i = inst_begin(F), e = inst_end(F); i != e; ++i){
 				count++;
@@ -109,6 +109,43 @@ namespace {
 
 				int change = 0;
 	
+				if ((instructionLists[p]->isTerminator())){
+					for (int r = 0; r<instructionLists[p]->getParent()->getTerminator()->getNumSuccessors();r++){
+
+						BasicBlock *newBlock = instructionLists[p]->getParent()->getTerminator()->getSuccessor(r);
+						Instruction* newInstr2 = newBlock->getFirstNonPHI();
+						for (int y = 0; y<=count;y++){
+
+							if(instructionLists[y]==newInstr2 && bbList[y]==newBlock->getName())							{
+ 
+								for (int j = 0; j<count2;j++){
+										if (reachDef[p*count2+j] == 1 && reachDef[y*count2+j]==0){
+
+											reachDef[y*count2+j]= reachDef[p*count2+j]; 
+											change =1;
+										}
+								}
+								
+								if (change==1){
+									if (p>y){
+										p = y;
+									}
+								}
+
+								//Get Line num
+								for (k = 0; k<count2;k++){
+									if(lineNum[k]>p){
+										k--;
+										break;
+									}
+								}
+								break;
+							}
+						}
+					}
+				
+				}
+
 				//Call Test
 				Instruction* newInstr = instructionLists[p];
 				BasicBlock *newBlock = newInstr->getParent();
@@ -129,17 +166,17 @@ namespace {
 									}
 									if (change==1){
 										if (p>y){
-											p =y;
+											p = y;
 										}
 									}
 
 //Get Line num
-								for (k = 0; k<count2;k++){
-									if(lineNum[k]>p){
-										k--;
-										break;
+									for (k = 0; k<count2;k++){
+										if(lineNum[k]>p){
+											k--;
+											break;
+										}
 									}
-								}
 									break;
 								}
 						}
@@ -171,4 +208,5 @@ namespace {
 }
 char p13::ID = 0;
 static RegisterPass<p13> X("p13", "Part 1.1", true, true);
+
 

@@ -100,11 +100,30 @@ namespace {
 							if(instructionLists[y]==newInstr2 && bbList[y]==newBlock->getName())							{
  
 								for (int j = 0; j<count2;j++){
-errs()<<"asd\n"; 
 										if (reachDef[p*count2+j] == 1){
 
-											reachDef[y*count2+j]= reachDef[p*count2+j]; 
+											reachDef[y*count2+j]= reachDef[p*count2+j];
+											change = 1; 
 										}
+
+										
+								}
+								
+								if (change == 1){
+									if (y<p){
+										p=y;
+									}
+
+									//Get Line num
+									for (k = 0; k<count2;k++){
+										if(lineNum[k]>p){
+											k--;
+											break;
+										}
+									}
+						
+									break;
+										
 								}
 							}
 						}
