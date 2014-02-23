@@ -26,7 +26,7 @@ namespace {
 		virtual bool runOnFunction(Function &F){
 			int changed;			
 			int changes = 0;
-			int count= 0;
+			int count= -1;
 			int count2 = 0;
 
 			//Get loopinfo
@@ -35,6 +35,8 @@ namespace {
 			std::vector<Instruction*> instructionLists;
 			std::vector<StringRef> def;
 			std::vector<unsigned> lineNum;
+			std::vector<unsigned> realLineNum;
+			std::set<Loop*> loopsVisited;
 			//Put each instruction into list			
 			for(inst_iterator i = inst_begin(F), e = inst_end(F); i != e; ++i){
 				count++;
@@ -48,102 +50,100 @@ namespace {
 				}
 				if (i->getOpcode()==28 && N && i->getOperand(1)->getName()!=""){
 					def.insert(def.end(), i->getOperand(1)->getName());
-					lineNum.insert(lineNum.end(), Line);
+					lineNum.insert(lineNum.end(), count);
+					realLineNum.insert(realLineNum.end(), Line);
 					count2++;
 				}else if (N && i->getName()!=""){
 					def.insert(def.end(), i->getName());
-					lineNum.insert(lineNum.end(), Line);
+					lineNum.insert(lineNum.end(), count);
+					realLineNum.insert(realLineNum.end(), Line);
 					count2++;
 				}
    			}
 			
 			int* reachDef = (int*)calloc(count*count2,sizeof(int));
 			
-			int curCount = -1;
 			int prevK = 0;
 			int k=0;
 			int p = 0;
 			for(p = 0;p<count;p++){
 				Instruction* i = instructionLists[p];
 				prevK = k;
-	
-				curCount++;		//go to next instruction
-				unsigned Line;
-				MDNode *N = i->getMetadata("dbg");
-				if (N) {
-					DILocation Loc(N);                     
-					 Line = Loc.getLineNumber();
-				}		
+				
+				//Get Line num
+				for (k = 0; k<count2;k++){
+					if(lineNum[k]>p){
+						k--;
+						break;
+					}
+				}
 
-				if (N){
-
-					if (curCount>0 ){
-						//Copy previous reach def
-						for (int j = 0; j<count2;j++){
-							if (reachDef[(curCount-1)*count2+j] == 1){
-								reachDef[curCount*count2+j] = reachDef[(curCount-1)*count2+j]; 
-							}
+				if (p>0 ){
+					//Copy previous reach def
+					for (int j = 0; j<count2;j++){
+						if (reachDef[(p-1)*count2+j] == 1){
+							reachDef[p*count2+j] = reachDef[(p-1)*count2+j]; 
 						}
 					}
+				}
 
-					//Get Line num
-					for (k = 0; k<count2;k++){
-						if(lineNum[k]>Line){
-							k--;
-							break;
-						}
-					}
+				
 
-					for (int m = k; m>prevK;m--){
+				for (int m = prevK+1; m<=k;m++){
 
-						if(reachDef[curCount*count2+m]==0){
-							reachDef[curCount*count2+m]=1;
-							//Check if need to get rid of def
-							for (int z = m-1; z>=0;z--){
-								if (reachDef[curCount*count2+z]==1){
-									if(def[m].equals_lower(def[z])){
-										reachDef[curCount*count2+z]=0;
-									}
+					//if(reachDef[p*count2+m]==0){
+						reachDef[p*count2+m]=1;
+						//Check if need to get rid of def
+						for (int z = count2; z>=0;z--){
+							if (reachDef[p*count2+z]==1 && lineNum[z]!=p){
+
+								if(def[m].equals_lower(def[z])){
+									reachDef[p*count2+z]=0;
 								}
 							}
-						}else{
-							break;
 						}
-					}
-
-
-
-
-				}else if (curCount>0){		//if no line number, copy previous row
-
-					for (int j = 0; j<count2;j++){
-						reachDef[curCount*count2+j] = reachDef[(curCount-1)*count2+j]; 
-					}
+					//}
 				}
 
 				//Loop Test
 				Instruction* newInstr = instructionLists[p];
 				BasicBlock* newBlock = newInstr->getParent();
 				Loop* newLoop = LI.getLoopFor(newBlock);
-				if (newLoop!=NULL){
+				if (newLoop!=NULL && loopsVisited.find(newLoop) == loopsVisited.end()){
 					//After
 					Instruction* newInstr2 = instructionLists[p+1];
 					BasicBlock* newBlock2 = newInstr2->getParent();
 					Loop* newLoop2 = LI.getLoopFor(newBlock2);
 					if (newLoop2!=newLoop){
-						for (int a = 0; a<count;a++){
+						for (int a = 0; a<p;a++){
 							Instruction* newInstr3 = instructionLists[a];
 							BasicBlock* newBlock3 = newInstr3->getParent();
 							Loop* newLoop3 = LI.getLoopFor(newBlock3);
 							if (newLoop3==newLoop){
+								loopsVisited.insert(newLoop);
 								for (int b = 0; b<count2;b++){
 									if(reachDef[p*count2+b]==1){
 										reachDef[a*count2+b]=1;
 									} 
 								}
-errs()<<"asd\n";
-								p=a;
-								//break;
+								//in case loop skipped
+								for (int b = 0; b<count2;b++){
+									if(reachDef[a*count2+b]==1){
+										reachDef[(p+1)*count2+b]=1;
+									} 
+								}
+
+								p=a--;
+
+								//Get Line num
+								for (k = 0; k<count2;k++){
+									if(lineNum[k]>p){
+										k--;
+										break;
+									}
+								}
+							
+								break;
 	
 							}
 						}
@@ -151,41 +151,11 @@ errs()<<"asd\n";
 				}
 			}
 
-/*
-			//Loops
-			for (int z = 0; z<count;z++){
-				Instruction* newInstr = instructionLists[z];
-				BasicBlock* newBlock = newInstr->getParent();
-				Loop* newLoop = LI.getLoopFor(newBlock);
-				if (newLoop!=NULL){
-					//After
-					Instruction* newInstr2 = instructionLists[z+1];
-					BasicBlock* newBlock2 = newInstr2->getParent();
-					Loop* newLoop2 = LI.getLoopFor(newBlock2);
-					if (newLoop2!=newLoop){
-						for (int a = 0; a<count;a++){
-							Instruction* newInstr3 = instructionLists[a];
-							BasicBlock* newBlock3 = newInstr3->getParent();
-							Loop* newLoop3 = LI.getLoopFor(newBlock3);
-							if (newLoop3==newLoop){
-								for (int b = 0; b<count2;b++){
-									if(reachDef[z*count2+b]==1){
-										reachDef[a*count2+b]=1;
-									} 
-								}	
-							}
-						}
-					}
-				}
-							
-			}
-
-*/
 			for (int z = 0; z<count;z++){
 				errs()<<*instructionLists[z]<<"\n";
 				for (int y = 0; y< count2; y++){
 					if (reachDef[z*count2+y]==1){
-						errs()<<"-------"<<lineNum[y]<<"-"<<def[y]<<"\n";
+						errs()<<"-------"<<realLineNum[y]<<"-"<<def[y]<<"\n";
 					}
 				}
 			}

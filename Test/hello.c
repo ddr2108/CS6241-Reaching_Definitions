@@ -31,6 +31,8 @@ j = i;
 j=10;
 while(rand()%20==5){
 	j+=i;
+	if (j>25){
+	  continue;}
 	j =5;
 }
 //z = i;

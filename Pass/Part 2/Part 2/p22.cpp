@@ -71,6 +71,10 @@ namespace {
 
 				refer = 0;
 			}
+
+			for(inst_iterator i = inst_begin(F), e = inst_end(F); i != e; ++i){
+       				errs()<<*i<<'\n';
+   			}
 			
 			return 1;
 

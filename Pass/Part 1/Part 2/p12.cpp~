@@ -126,7 +126,7 @@ namespace {
 
 			Instruction* newInstr = instructionLists[1];
 			BasicBlock* newBlock = newInstr->getParent();
-			for (int z = 0; z<count;z++){
+			for (int z = 0; z<=count;z++){
 				for (int x = 0; x<lineNum.size(); x++){
 					int y = lineNum[x];
 					if (y<=z){
@@ -164,7 +164,7 @@ namespace {
 			}
 			
 			//Fix duplicates
-			for (int p = 0; p<count; p++){
+			for (int p = 0; p<=count; p++){
 				for (int m = 0; m<count2; m++){
 					for(int n = 0; n<m; n++){
 						if (def[n].equals_lower(def[m]) && reachDef[p*count2+m]==1 && reachDef[p*count2+n]==1){
@@ -184,6 +184,11 @@ namespace {
 							if ((newBlock1==newBlock2) && !(LI.getLoopFor(newBlock1)==LI.getLoopFor(newBlock2) && LI.getLoopFor(newBlock2)!=NULL)){
 								reachDef[p*count2+n]=0;		//remove earlier def
 							}
+							
+							if ((newBlock1==newBlock2) && (LI.getLoopFor(newBlock1)==LI.getLoopFor(newBlock2) && LI.getLoopFor(newBlock2)!=NULL)){
+								reachDef[p*count2+n]=0;		//remove earlier def
+							}
+							
 							//if in different blocks
 							if (newBlock1!=newBlock2){
 								if (PDT.dominates(newBlock1, newBlock2)){
@@ -202,7 +207,7 @@ namespace {
 			///////////////////////////////////////////////////////////////
 
 			//Print Data
-			for (int z = 0; z<count;z++){
+			for (int z = 0; z<=count;z++){
 				errs()<<*instructionLists[z]<<"\n";
 				for (int y = 0; y<lineNum.size(); y++){
 					if (reachDef[z*count2+y]==1){
@@ -211,6 +216,7 @@ namespace {
 				}
 			}
 
+			exit(3);
 			return 1;
 
 		}
