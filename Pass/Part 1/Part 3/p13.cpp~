@@ -107,22 +107,41 @@ namespace {
 					//}
 				}
 
-				//Loop Test
+				int change = 0;
+	
+				//Call Test
 				Instruction* newInstr = instructionLists[p];
 				BasicBlock *newBlock = newInstr->getParent();
-				if (newInstr->isTerminator() && (newBlock->getTerminator())->getNumSuccessors()>1){
+				if (newInstr->isTerminator() && (((newBlock->getTerminator())->getNumSuccessors()>1)||newInstr->getOpcode()==2)){
 					for (int x = 0; x<newBlock->getTerminator()->getNumSuccessors(); x++){
-						BasicBlock* newBlock2 = newBlock->->getTerminator()getSuccessor(x);
+						BasicBlock* newBlock2 = newBlock->getTerminator()->getSuccessor(x);
 						Instruction* newInstr2 = newBlock2->getFirstNonPHI();
 						for (int y = 0; y<=count;y++){
 							if(instructionLists[y]==newInstr2 && bbList[y]==newBlock2->getName()){
 								for (int j = 0; j<count2;j++){
-									if (reachDef[p*count2+j] == 1){
-										reachDef[y*count2+j] = reachDef[p*count2+j]; 
+
+										if (reachDef[p*count2+j] == 1){
+											if (reachDef[y*count2+j]!=1){ 
+												reachDef[y*count2+j]= reachDef[p*count2+j]; 
+												change = 1;
+												}
+										}
+									}
+									if (change==1){
+										if (p>y){
+											p =y;
+										}
+									}
+
+//Get Line num
+								for (k = 0; k<count2;k++){
+									if(lineNum[k]>p){
+										k--;
+										break;
 									}
 								}
-								
-							}
+									break;
+								}
 						}
 					}
 				}
@@ -130,7 +149,7 @@ namespace {
 			}
 
 			for (int z = 0; z<=count;z++){
-				errs()<<*instructionLists[z]<<"\n";
+				errs()<<*instructionLists[z]<<"-------"<<instructionLists[z]->getOpcode()<<"\n";
 				for (int y = 0; y<count2; y++){
 					if (reachDef[z*count2+y]==1){
 						errs()<<"-------"<<realLineNum[y]<<"-"<<def[y]<<"\n";

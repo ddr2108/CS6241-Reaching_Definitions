@@ -32,7 +32,9 @@ j=10;
 while(rand()%20==5){
 	j+=i;
 	if (j>25){
-	  continue;}
+	  continue;
+	}
+	i = 3;
 	j =5;
 }
 //z = i;

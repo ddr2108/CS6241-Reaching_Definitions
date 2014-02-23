@@ -37,10 +37,12 @@ namespace {
 			std::vector<unsigned> lineNum;
 			std::vector<unsigned> realLineNum;
 			std::set<Loop*> loopsVisited;
+			std::vector<StringRef> bbList;
 			//Put each instruction into list			
 			for(inst_iterator i = inst_begin(F), e = inst_end(F); i != e; ++i){
 				count++;
 				instructionLists.insert(instructionLists.end(), &*i);
+				bbList.insert(bbList.end(), i->getParent()->getName());
 				//Get line number
 				unsigned Line;
 				MDNode *N = i->getMetadata("dbg");
@@ -78,13 +80,36 @@ namespace {
 					}
 				}
 
-				if (p>0 ){
+				//Get successor
+
+				if (p>0){
 					//Copy previous reach def
 					for (int j = 0; j<count2;j++){
 						if (reachDef[(p-1)*count2+j] == 1){
 							reachDef[p*count2+j] = reachDef[(p-1)*count2+j]; 
 						}
 					}
+				}
+				if ((instructionLists[p]->isTerminator())){
+					for (int r = 0; r<instructionLists[p]->getParent()->getTerminator()->getNumSuccessors();r++){
+
+						BasicBlock *newBlock = instructionLists[p]->getParent()->getTerminator()->getSuccessor(r);
+						Instruction* newInstr2 = newBlock->getFirstNonPHI();
+						for (int y = 0; y<=count;y++){
+
+							if(instructionLists[y]==newInstr2 && bbList[y]==newBlock->getName())							{
+ 
+								for (int j = 0; j<count2;j++){
+errs()<<"asd\n"; 
+										if (reachDef[p*count2+j] == 1){
+
+											reachDef[y*count2+j]= reachDef[p*count2+j]; 
+										}
+								}
+							}
+						}
+					}
+				
 				}
 
 				
