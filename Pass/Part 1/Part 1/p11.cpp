@@ -61,17 +61,17 @@ namespace {
 				}
    			}
 			
-			int* reachDef = (int*)calloc(count*count2,sizeof(int));
+			int* reachDef = (int*)calloc((count+1)*count2,sizeof(int));
 			
 			int prevK = 0;
 			int k=0;
 			int p = 0;
-			for(p = 0;p<count;p++){
+			for(p = 0;p<=count;p++){
 				Instruction* i = instructionLists[p];
 				prevK = k;
 				
 				//Get Line num
-				for (k = 0; k<count2;k++){
+				for (k = 0; k<=count2;k++){
 					if(lineNum[k]>p){
 						k--;
 						break;
@@ -151,9 +151,9 @@ namespace {
 				}
 			}
 
-			for (int z = 0; z<count;z++){
+			for (int z = 0; z<=count;z++){
 				errs()<<*instructionLists[z]<<"\n";
-				for (int y = 0; y< count2; y++){
+				for (int y = 0; y<count2; y++){
 					if (reachDef[z*count2+y]==1){
 						errs()<<"-------"<<realLineNum[y]<<"-"<<def[y]<<"\n";
 					}

@@ -59,7 +59,7 @@ namespace {
 					count2++;
 				}
    			}
-			int* reachDef = (int*)calloc(count*count2,sizeof(int));
+			int* reachDef = (int*)calloc((count+1)*count2,sizeof(int));
 			/////////////////////////////////////////////////////////////
 			int ind;			
 			int i,j;
@@ -216,7 +216,7 @@ namespace {
 				}
 			}
 
-			exit(3);
+			//exit(3);
 			return 1;
 
 		}

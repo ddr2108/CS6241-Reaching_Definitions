@@ -24,7 +24,7 @@ entry:
   store i32 10, i32* %j, align 4
   br label %while.cond
 
-while.cond:                                       ; preds = %while.body, %entry
+while.cond:                                       ; preds = %if.end, %if.then, %entry
   %call = call i32 @rand() #2
   %rem = srem i32 %call, 20
   %cmp = icmp eq i32 %rem, 5
@@ -35,6 +35,14 @@ while.body:                                       ; preds = %while.cond
   %4 = load i32* %j, align 4
   %add1 = add nsw i32 %4, %3
   store i32 %add1, i32* %j, align 4
+  %5 = load i32* %j, align 4
+  %cmp2 = icmp sgt i32 %5, 25
+  br i1 %cmp2, label %if.then, label %if.end
+
+if.then:                                          ; preds = %while.body
+  br label %while.cond
+
+if.end:                                           ; preds = %while.body
   store i32 5, i32* %j, align 4
   br label %while.cond
 
