@@ -40,6 +40,7 @@ namespace {
 			for(inst_iterator i = inst_begin(F), e = inst_end(F); i != e; ++i){
 				count++;
 				instructionLists.insert(instructionLists.end(), &*i);
+				
 				//Get line number
 				unsigned Line;
 				MDNode *N = i->getMetadata("dbg");
@@ -47,6 +48,7 @@ namespace {
 					DILocation Loc(N);                     
 					 Line = Loc.getLineNumber();
 				}
+				//Store data about variables in list - include line number, variable name, and actual instruction
 				if (i->getOpcode()==28 && N && i->getOperand(1)->getName()!=""){
 					def.insert(def.end(), i->getOperand(1)->getName());
 					lineNum.insert(lineNum.end(), count);
@@ -59,12 +61,14 @@ namespace {
 					count2++;
 				}
    			}
-			int* reachDef = (int*)calloc((count+1)*count2,sizeof(int));
+			int* reachDef = (int*)calloc((count+1)*count2,sizeof(int));		//2d array of instructions and possible reach
 			/////////////////////////////////////////////////////////////
 			int ind;			
 			int i,j;
 			int *dist;
 			BasicBlock* successorBlock;
+
+			//Perform distance algorithm to find the distance between all the blocks
 
 			//Get list of basic blocks			
 			Function::BasicBlockListType &allblocks = F.getBasicBlockList();
@@ -103,7 +107,7 @@ namespace {
 				i++;
 			}
 
-			//Perform the algorithm
+			//Perform the algorithm to find shortest distance
 			for (int x = 0; x<ind ;x++){
 				for (int y = 0; y<ind ;y++){
 					for (int z = 0; z<ind ;z++){
@@ -129,9 +133,9 @@ namespace {
 
 			Instruction* newInstr = instructionLists[1];
 			BasicBlock* newBlock = newInstr->getParent();
-			for (int z = 0; z<=count;z++){
-				for (int x = 0; x<lineNum.size(); x++){
-					int y = lineNum[x];
+			for (int z = 0; z<=count;z++){					//go through instructions
+				for (int x = 0; x<lineNum.size(); x++){			//go through defenitions
+					int y = lineNum[x];				//FInd which insturction def is
 					if (y>-1){
 						//Y instruction
 						Instruction* newInstr1 = instructionLists[y];
@@ -157,6 +161,7 @@ namespace {
 						//Path from y to z?
 						if ((ind1==ind2 && y<z)||(dist[ind1*ind+ind2]>0 && dist[ind1*ind+ind2]<1000000000)){		
 							int flag = 0;
+							//Weird edge case where variables are in the same block and also in loop
 							if ((ind1==ind2 && y>z)){
 
 								for (int q = x; q>=0; q--){
@@ -171,7 +176,7 @@ namespace {
 									reachDef[z*count2+x]=1;
 								}
 							}else{
-								reachDef[z*count2+x]=1;
+								reachDef[z*count2+x]=1;		//if there is a path, mark that there is a path
 							}
 						}
 
@@ -183,9 +188,9 @@ namespace {
 			}
 			
 			//Fix duplicates
-			for (int p = 0; p<=count; p++){
-				for (int m = 0; m<count2; m++){
-					for(int n = 0; n<m; n++){
+			for (int p = 0; p<=count; p++){					//go through instructions (instruction studied)
+				for (int m = 0; m<count2; m++){				//go through defs
+					for(int n = 0; n<m; n++){			//go through defs reached already
 						if (def[n].equals_lower(def[m]) && reachDef[p*count2+m]==1 && reachDef[p*count2+n]==1){
 							//M block
 							Instruction* newInstr1 = instructionLists[lineNum[m]];
@@ -245,45 +250,55 @@ namespace {
 							}*/
 
 
-							if (p==lineNum[n]){
-								reachDef[p*count2+m]=0;		//remove earlier def
-							}else if (p==lineNum[m]){
-								reachDef[p*count2+n]=0;		//remove earlier def
+							//Test for all kinds of cases
+							if (p==lineNum[n]){			//We are comparing def to current instruct
+								reachDef[p*count2+m]=0;		//remove other def	
+							}else if (p==lineNum[m]){		//We are comparing def to current instruct
+								reachDef[p*count2+n]=0;		//remove other def	
 							}else if (newBlock1==newBlock2){
+								//If same block
+								//if same block as instruction being checked for reaching
 								if (newBlock3==newBlock1){
+									//Do tests based on line numbers to see what reach taht instrcution
 									if (lineNum[n]<p && lineNum[m]>p){
 										reachDef[p*count2+m]=0;		//remove 
 									}else if (lineNum[n]>p && lineNum[m]>p){
-										reachDef[p*count2+n]=0;   //arlier def
+										reachDef[p*count2+n]=0;   //remove
 									}else if (lineNum[n]<p && lineNum[m]<p){
-										reachDef[p*count2+n]=0;
+										reachDef[p*count2+n]=0;	//remove
 									}	
 								}else{
-									reachDef[p*count2+n]=0;   //arlier def
+									reachDef[p*count2+n]=0;   //if not in same block as instruction studied
 								}
-							}else if (newBlock1==newBlock3){
-								reachDef[p*count2+n]=0;   //arlier def
-							}else if (newBlock1==newBlock3){
+							/*}
+							else if (newBlock1==newBlock3){
+								reachDef[p*count2+n]=0;   //if 
+							}
+							else if (newBlock1==newBlock3){
 								reachDef[p*count2+m]=0;   //arlier def
-							}else if (newBlock1!=newBlock2){
+							*/}else if (newBlock1!=newBlock2){
+								//Do the domination chcks as per paper if blocks are different
 								if (PDT.dominates(newBlock1, newBlock2) && PDT.dominates(newBlock3, newBlock1)){
 									reachDef[p*count2+n]=0;		//remove earlier def
 								}
 								else if (PDT.dominates(newBlock2, newBlock1)){
 									reachDef[p*count2+m]=0;		//remove earlier def
 								}
+								//If different blocks, try to remove earlier def
 								else if (newBlock3==newBlock2 && lineNum[n]<=p){
 									reachDef[p*count2+m]=0;		//remove earlier def
 								}
 								else if (newBlock3==newBlock1 && lineNum[m]<=p){
 									reachDef[p*count2+n]=0;		//remove earlier def
 								}else{
+									//Checks to look for conditional statements in loops
 									int countDist = 0;
 									for (int s = 0; s<ind ;s++){
 										if (dist[s*ind+ind3]==1){
 											countDist++;
 										}
 									}
+									//Try to reverse path to figure out which things to delete
 									if (countDist==1){
 										if (dist[ind1*ind+ind3]==1){
 											reachDef[p*count2+n]=0;		//remove earlier def

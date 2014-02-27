@@ -28,6 +28,7 @@ namespace {
 
    			std::vector<Instruction*> instructionList;	//List of instructions
    			std::vector<Instruction*> subList;	//List of instructions
+
 			//Put each instruction into list			
 			for(inst_iterator i = inst_begin(F), e = inst_end(F); i != e; ++i){
        				instructionList.insert(instructionList.end(), &*i);
@@ -44,17 +45,17 @@ namespace {
 						//Get all instructions that refer to this value
 						for (Value::use_iterator UI = I1->use_begin(), UE = I1->use_end(); UI != UE; ++UI){
 							 if (Instruction *I2 = dyn_cast<Instruction>(*UI)) {
-								subList.insert(subList.begin(),I2);
+								subList.insert(subList.begin(),I2);	//put in sublist
 							}
 						}
 					}
 
 					ConstantInt* CI = NULL;
 					issue = 0;
+					//while sublist not empty
 					while (!subList.empty()) {
 						Instruction *I3 = *subList.begin();
 				     		subList.erase(subList.begin());
-
 
 						
 						//If not definiton
@@ -68,12 +69,12 @@ namespace {
 							if (MDNode *N = I3->getMetadata("dbg")) {
 								DILocation Loc(N);                     
 								unsigned Line = Loc.getLineNumber();
-								errs()<<Line<<"\n";
+								errs()<<I3->getName()<<" "<<Line<<"\n";
 							}else{
-								errs()<<*I3<<"\n";
+								errs()<<I3->getName()<<" "<<*I3<<"\n";
 							}
 							
-						}else if(I3->getOpcode() == 28 && I3->getOperand(0)==I1){
+						}else if(I3->getOpcode() == 28 && I3->getOperand(0)==I1){	//if used in other def
 							//Print name of error
 							if (issue==0){
 								errs()<<I1->getName()<<"\n";
@@ -83,9 +84,9 @@ namespace {
 							if (MDNode *N = I3->getMetadata("dbg")) {
 								DILocation Loc(N);                     
 								unsigned Line = Loc.getLineNumber();
-								errs()<<Line<<"\n";
+								errs()<<I3->getName()<<" "<<Line<<"\n";
 							}else{
-								errs()<<*I3<<"\n";
+								errs()<<I3->getName()<<" "<<*I3<<"\n";
 							}
 						}else{
 							break;

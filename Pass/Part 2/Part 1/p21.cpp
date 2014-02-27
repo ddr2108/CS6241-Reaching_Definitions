@@ -54,11 +54,14 @@ namespace {
 							}
 						}
 					}
+
+					//Go through uses of this variable
 					ConstantInt* CI = NULL;
 					while (!subList.empty()) {
 						Instruction *I3 = *subList.begin();
 				     		subList.erase(subList.begin());
 
+						//Continue if given new values
 						if(I3->getOpcode() == 28){ 
 
 							Value *v = I3->getOperand(0);
@@ -68,14 +71,17 @@ namespace {
 							}else{
 								break;
 							}
-						}else if(I3->getOpcode() == 27){
+						}else if(I3->getOpcode() == 27){		//replace places with loads
 							if (CI!=NULL){
 								changed = 1;
 								changes+=I3->getNumUses();
-								I3->replaceAllUsesWith(CI);
+								I3->replaceAllUsesWith(CI);		//reaplce values where possible
+
+								
+								//remove deleted instructions from lists
 								subList.erase(std::remove(subList.begin(), subList.end(), I3), subList.end());
 								instructionList.erase(std::remove(instructionList.begin(), instructionList.end(), I3), instructionList.end());
-								I3->eraseFromParent();
+								I3->eraseFromParent();		//remove instructions no longer needed
 
 							}
 						}else{
@@ -92,6 +98,7 @@ namespace {
 		       			instructionList2.insert(instructionList2.end(), &*i);
 		   		}
 
+				//Get some analysis
 	   			DataLayout *TD = getAnalysisIfAvailable<DataLayout>();
 	   			TargetLibraryInfo *TLI = &getAnalysis<TargetLibraryInfo>();
 	 
@@ -99,7 +106,8 @@ namespace {
 				    	Instruction *I4 = *instructionList2.begin();
 				     	instructionList2.erase(instructionList2.begin());    // Get an element from the worklist...
 	 
-	     				if (!I4->use_empty()){                 // Don't muck with dead instructions...
+					//Now that made constants, perform constant folding where possible
+	     				if (!I4->use_empty()){                 
 	       					if (Constant *C = ConstantFoldInstruction(I4, TD, TLI)) {
 
 			 				for (Value::use_iterator UI = I4->use_begin(), UE = I4->use_end(); UI != UE; ++UI){
