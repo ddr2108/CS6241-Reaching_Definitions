@@ -7,29 +7,20 @@ return 2;
 }*/
 int asd;
 int main() {
-/*
-int i;
-int *k;
-int j;
-k = &i;
-i =7;
-j = 2+i;*/
 
+int i = 3+5;
+int k;
+int j = 2+9;
+//k = &i;
+k = 2+i;
 
-
-
-int *k;
-int i; 
-int j;
-int z = 4 + 5;
-j = i+z;
-i =8;
+//i =8;
 //i = 4;
-j = i;
+//j = 10;
 //k = &i;
 //*k = 5;
-j=10;
-while(rand()%20==5){
+//j=i;
+/*while(rand()%20==5){
 	j+=i;
 	if (j>25){
 	  j = 15;
@@ -38,9 +29,9 @@ while(rand()%20==5){
 	}
 	i = 3;
 	j =5;
-}
+}*/
 //z = i;
-//printf("%d %d %d", i, j ,z);
+printf("%d %d %d",i, j ,k);
 i = 1;
 j = 10;
   return 2;

@@ -81,7 +81,7 @@ namespace {
 		}
 
 		virtual void getAnalysisUsage(AnalysisUsage &AU) const {
-			AU.setPreservesCFG();
+			//AU.setPreservesCFG();
 		}
 
 	};
