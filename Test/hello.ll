@@ -8,20 +8,15 @@ target triple = "x86_64-unknown-linux-gnu"
 define i32 @main() #0 {
 entry:
   %retval = alloca i32, align 4
-  %k = alloca i32*, align 8
   %i = alloca i32, align 4
+  %k = alloca i32, align 4
   %j = alloca i32, align 4
-  %z = alloca i32, align 4
   store i32 0, i32* %retval
-  store i32 9, i32* %z, align 4
-  %0 = load i32* %i, align 4
-  %1 = load i32* %z, align 4
-  %add = add nsw i32 %0, %1
-  store i32 %add, i32* %j, align 4
   store i32 8, i32* %i, align 4
-  %2 = load i32* %i, align 4
-  store i32 %2, i32* %j, align 4
-  store i32 10, i32* %j, align 4
+  store i32 11, i32* %j, align 4
+  %0 = load i32* %i, align 4
+  %add = add nsw i32 2, %0
+  store i32 %add, i32* %k, align 4
   br label %while.cond
 
 while.cond:                                       ; preds = %if.end, %if.then, %entry
@@ -31,18 +26,24 @@ while.cond:                                       ; preds = %if.end, %if.then, %
   br i1 %cmp, label %while.body, label %while.end
 
 while.body:                                       ; preds = %while.cond
-  %3 = load i32* %i, align 4
-  %4 = load i32* %j, align 4
-  %add1 = add nsw i32 %4, %3
+  %1 = load i32* %i, align 4
+  %2 = load i32* %j, align 4
+  %add1 = add nsw i32 %2, %1
   store i32 %add1, i32* %j, align 4
-  %5 = load i32* %j, align 4
-  %cmp2 = icmp sgt i32 %5, 25
-  br i1 %cmp2, label %if.then, label %if.end
+  %3 = load i32* %j, align 4
+  %cmp2 = icmp sgt i32 %3, 25
+  br i1 %cmp2, label %if.then, label %if.else
 
 if.then:                                          ; preds = %while.body
+  store i32 15, i32* %j, align 4
   br label %while.cond
 
-if.end:                                           ; preds = %while.body
+if.else:                                          ; preds = %while.body
+  store i32 9, i32* %j, align 4
+  br label %if.end
+
+if.end:                                           ; preds = %if.else
+  store i32 3, i32* %i, align 4
   store i32 5, i32* %j, align 4
   br label %while.cond
 

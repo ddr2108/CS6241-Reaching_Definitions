@@ -123,6 +123,9 @@ namespace {
 
       			PostDominatorTree& PDT = getAnalysis<PostDominatorTree>();
   			LoopInfo &LI = getAnalysis<LoopInfo>();
+			DominatorTreeBase<BasicBlock> *dominatorTree;
+			dominatorTree = new DominatorTreeBase<BasicBlock>(false);
+			dominatorTree->recalculate(F);
 
 			Instruction* newInstr = instructionLists[1];
 			BasicBlock* newBlock = newInstr->getParent();
@@ -187,54 +190,110 @@ namespace {
 							//M block
 							Instruction* newInstr1 = instructionLists[lineNum[m]];
 							BasicBlock* newBlock1 = newInstr1->getParent();
+							int ind1 = 0;
+							for (Function::const_iterator firstBlock = allblocks.begin(); firstBlock != allblocks.end(); firstBlock++) {
+								if (firstBlock==(*newBlock1)){
+									break;
+								}
+								ind1++;
+							}	
 							
 							//N block
 							Instruction* newInstr2 = instructionLists[lineNum[n]];
 							BasicBlock* newBlock2 = newInstr2->getParent();
+							int ind2 = 0;
+							for (Function::const_iterator secondBlock = allblocks.begin(); secondBlock != allblocks.end(); secondBlock++) {
+								if (secondBlock==(*newBlock2)){
+									break;
+								}
+								ind2++;
+							}	
 							
 							//P block
 							Instruction* newInstr3 = instructionLists[p];
 							BasicBlock* newBlock3 = newInstr3->getParent();
-
+							int ind3 = 0;
+							for (Function::const_iterator thirdBlock = allblocks.begin(); thirdBlock != allblocks.end(); thirdBlock++) {
+								if (thirdBlock==(*newBlock3)){
+									break;
+								}
+								ind3++;
+							}	
+/*
 							//if in the same block
 							if ((newBlock1==newBlock2) && !(LI.getLoopFor(newBlock1)==LI.getLoopFor(newBlock2) && LI.getLoopFor(newBlock2)!=NULL)){
 								reachDef[p*count2+n]=0;		//remove earlier def
 							}
 							
-							/*if ((newBlock1==newBlock2) && (LI.getLoopFor(newBlock1)==LI.getLoopFor(newBlock2) && LI.getLoopFor(newBlock2)!=NULL)){
-								reachDef[p*count2+n]=0;		//remove earlier def
-							}*/
+							//if ((newBlock1==newBlock2) && (LI.getLoopFor(newBlock1)==LI.getLoopFor(newBlock2) && LI.getLoopFor(newBlock2)!=NULL)){
+							//	reachDef[p*count2+n]=0;		//remove earlier def
+							//}
 							
 							if ((LI.getLoopFor(newBlock3)!=LI.getLoopFor(newBlock2) && LI.getLoopFor(newBlock3)!=NULL)){
 								if (lineNum[n]<p && lineNum[m]<p)
 									reachDef[p*count2+n]=0;		//remove earlier def
 							}
-							
+							//Fix
 							if ((LI.getLoopFor(newBlock1)==LI.getLoopFor(newBlock2) && LI.getLoopFor(newBlock2)!=NULL)){
-								if (lineNum[n]<p && lineNum[m]>p)
+								if (lineNum[n]<p && lineNum[m]>p){
 									reachDef[p*count2+m]=0;		//remove earlier def
-								else if (lineNum[n]>p && lineNum[m]>p)
-									reachDef[p*count2+n]=0;		//remove earlier def
-								else if (lineNum[n]<p && lineNum[m]<p)
-									reachDef[p*count2+n]=0;		//remove earlier def
-							}
+								}else if (lineNum[n]>p && lineNum[m]>p){
+									//reachDef[p*count2+n]=0;		//remove earlier def
+								}else if (lineNum[n]<p && lineNum[m]<p){
+									reachDef[p*count2+n]=0;
+								}		//remove earlier def
+							}*/
 
 
-							if (p==lineNum[n]&& m>n){
+							if (p==lineNum[n]){
 								reachDef[p*count2+m]=0;		//remove earlier def
-							}
-							if (p==lineNum[m]&& n>m){
+							}else if (p==lineNum[m]){
 								reachDef[p*count2+n]=0;		//remove earlier def
-							}
-
-							//if in different blocks
-							if (newBlock1!=newBlock2){
-								if (PDT.dominates(newBlock1, newBlock2)){
-									reachDef[p*count2+n]=0;		//remove earlier def
-								}
+							}else if (newBlock1==newBlock2){
 								if (newBlock3==newBlock1){
+									if (lineNum[n]<p && lineNum[m]>p){
+										reachDef[p*count2+m]=0;		//remove 
+									}else if (lineNum[n]>p && lineNum[m]>p){
+										reachDef[p*count2+n]=0;   //arlier def
+									}else if (lineNum[n]<p && lineNum[m]<p){
+										reachDef[p*count2+n]=0;
+									}	
+								}else{
+									reachDef[p*count2+n]=0;   //arlier def
+								}
+							}else if (newBlock1==newBlock3){
+								reachDef[p*count2+n]=0;   //arlier def
+							}else if (newBlock1==newBlock3){
+								reachDef[p*count2+m]=0;   //arlier def
+							}else if (newBlock1!=newBlock2){
+								if (PDT.dominates(newBlock1, newBlock2) && PDT.dominates(newBlock3, newBlock1)){
 									reachDef[p*count2+n]=0;		//remove earlier def
 								}
+								else if (PDT.dominates(newBlock2, newBlock1)){
+									reachDef[p*count2+m]=0;		//remove earlier def
+								}
+								else if (newBlock3==newBlock2 && lineNum[n]<=p){
+									reachDef[p*count2+m]=0;		//remove earlier def
+								}
+								else if (newBlock3==newBlock1 && lineNum[m]<=p){
+									reachDef[p*count2+n]=0;		//remove earlier def
+								}else{
+									int countDist = 0;
+									for (int s = 0; s<ind ;s++){
+										if (dist[s*ind+ind3]==1){
+											countDist++;
+										}
+									}
+									if (countDist==1){
+										if (dist[ind1*ind+ind3]==1){
+											reachDef[p*count2+n]=0;		//remove earlier def
+										}else if (dist[ind2*ind+ind3]==1){
+											reachDef[p*count2+m]=0;		//remove earlier def
+										}
+									}
+								}
+
+							
 							}
 
 						}

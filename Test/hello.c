@@ -20,18 +20,19 @@ k = 2+i;
 //k = &i;
 //*k = 5;
 //j=i;
-/*while(rand()%20==5){
+while(rand()%20==5){
 	j+=i;
 	if (j>25){
 	  j = 15;
+	  //break;
 	}else{
 	   j = 9;
 	}
 	i = 3;
 	j =5;
-}*/
+}
 //z = i;
-printf("%d %d %d",i, j ,k);
+//printf("%d %d %d",i, j ,k);
 i = 1;
 j = 10;
   return 2;
