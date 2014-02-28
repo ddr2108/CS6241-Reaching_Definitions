@@ -260,6 +260,7 @@ namespace {
 								//if same block as instruction being checked for reaching
 								if (newBlock3==newBlock1){
 									//Do tests based on line numbers to see what reach taht instrcution
+									//keep instruction that occurs closest in time to studied instruction
 									if (lineNum[n]<p && lineNum[m]>p){
 										reachDef[p*count2+m]=0;		//remove 
 									}else if (lineNum[n]>p && lineNum[m]>p){

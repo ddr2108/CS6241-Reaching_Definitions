@@ -38,6 +38,7 @@ namespace {
 			std::vector<unsigned> realLineNum;
 			std::set<Loop*> loopsVisited;
 			std::vector<StringRef> bbList;
+
 			//Put each instruction into list			
 			for(inst_iterator i = inst_begin(F), e = inst_end(F); i != e; ++i){
 				count++;
@@ -50,6 +51,7 @@ namespace {
 					DILocation Loc(N);                     
 					 Line = Loc.getLineNumber();
 				}
+				//Store data about variables in list - include line number, variable name, and actual instruction
 				if (i->getOpcode()==28 && N && i->getOperand(1)->getName()!=""){
 					def.insert(def.end(), i->getOperand(1)->getName());
 					lineNum.insert(lineNum.end(), count);
@@ -68,6 +70,7 @@ namespace {
 			int prevK = 0;
 			int k=0;
 			int p = 0;
+			//go through each instruction
 			for(p = 0;p<=count;p++){
 				Instruction* i = instructionLists[p];
 				prevK = k;
@@ -80,7 +83,6 @@ namespace {
 					}
 				}
 
-				//Get successor
 
 				if (p>0){
 					//Copy previous reach def
@@ -90,15 +92,18 @@ namespace {
 						}
 					}
 				}
+				//if it is hte last instruction in block
 				if ((instructionLists[p]->isTerminator())){
+					//Loop through scuccessors
 					for (int r = 0; r<instructionLists[p]->getParent()->getTerminator()->getNumSuccessors();r++){
 
 						BasicBlock *newBlock = instructionLists[p]->getParent()->getTerminator()->getSuccessor(r);
 						Instruction* newInstr2 = newBlock->getFirstNonPHI();
+						//First instruction in basic block should have the reach defenitions based on the 
 						for (int y = 0; y<=count;y++){
-
+							//Find the instruction in list
 							if(instructionLists[y]==newInstr2 && bbList[y]==newBlock->getName())							{
- 
+ 								//Start copying
 								for (int j = 0; j<count2;j++){
 errs()<<"asd\n"; 
 										if (reachDef[p*count2+j] == 1){
@@ -113,7 +118,7 @@ errs()<<"asd\n";
 				}
 
 				
-
+				//Add new defitions reachable
 				for (int m = prevK+1; m<=k;m++){
 
 					//if(reachDef[p*count2+m]==0){
@@ -130,20 +135,24 @@ errs()<<"asd\n";
 					//}
 				}
 
-				//Loop Test
+				//Loop for this instruction
 				Instruction* newInstr = instructionLists[p];
 				BasicBlock* newBlock = newInstr->getParent();
 				Loop* newLoop = LI.getLoopFor(newBlock);
+				//Keep track of loops to prevent doing infinite
 				if (newLoop!=NULL && loopsVisited.find(newLoop) == loopsVisited.end()){
-					//After
+					//Next instruction Loop
 					Instruction* newInstr2 = instructionLists[p+1];
 					BasicBlock* newBlock2 = newInstr2->getParent();
 					Loop* newLoop2 = LI.getLoopFor(newBlock2);
+					//If the two instructions are in different loops
 					if (newLoop2!=newLoop){
+						//go through previous instructions
 						for (int a = 0; a<p;a++){
 							Instruction* newInstr3 = instructionLists[a];
 							BasicBlock* newBlock3 = newInstr3->getParent();
 							Loop* newLoop3 = LI.getLoopFor(newBlock3);
+							//if it is in the loop, the copy reaching defention from this end to the beginning
 							if (newLoop3==newLoop){
 								loopsVisited.insert(newLoop);
 								for (int b = 0; b<count2;b++){
@@ -158,6 +167,8 @@ errs()<<"asd\n";
 									} 
 								}
 
+
+								//Reset iterative where change was made
 								p=a--;
 
 								//Get Line num
