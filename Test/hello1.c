@@ -24,7 +24,7 @@ while(rand()%20==5){
 	j+=i;
 	if (j>25){
 	  j = 15;
-	  break;
+	  //break;
 	}else{
 		i = 3;
 	   j = 9;
@@ -36,6 +36,7 @@ while(rand()%20==5){
 //printf("%d %d %d",i, j ,k);
 i = 1;
 j = 10;
+i = 8;
   return 2;
 }
 

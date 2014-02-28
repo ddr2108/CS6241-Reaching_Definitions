@@ -78,7 +78,7 @@ namespace {
 				prevK = k;
 				
 				//Get Line num
-				for (k = 0; k<=count2;k++){
+				for (k = 0; k<count2;k++){
 					if(lineNum[k]>p){
 						k--;
 						break;
@@ -93,7 +93,7 @@ namespace {
 							reachDef[p*count2+j] = reachDef[(p-1)*count2+j]; 
 						}
 					}
-				}else if (p>0){	//if prev instruction is actually the prev block
+				} else if (p>0 && (i->getParent()->getFirstNonPHI()==i)){	//if prev instruction is actually the prev block
 					Instruction* prevInstr = instructionLists[p-1];
 					BasicBlock* prevBlock = prevInstr->getParent();
 					for (int x = 0; x<prevBlock->getTerminator()->getNumSuccessors(); x++){
@@ -152,7 +152,7 @@ namespace {
 											}
 									}
 								}
-								//If there was a change restart analysis earlier
+								//If there was a change restart analysis earlier - add to procset
 								if (change==1){
 									if (p>y){
 										p = y;
@@ -176,7 +176,7 @@ namespace {
 
 			//Print results
 			for (int z = 0; z<=count;z++){
-				errs()<<*instructionLists[z]<<"-------"<<instructionLists[z]->getOpcode()<<"\n";
+				errs()<<*instructionLists[z]<<"\n";
 				for (int y = 0; y<count2; y++){
 					if (reachDef[z*count2+y]==1){
 						errs()<<"-------"<<realLineNum[y]<<"-"<<def[y]<<"\n";
