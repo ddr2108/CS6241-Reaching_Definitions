@@ -25,9 +25,10 @@ namespace {
 		//Run for each function
 		virtual bool runOnFunction(Function &F){
 			int changed;			
-			int changes = 0;
 			int count= -1;
 			int count2 = 0;
+			
+			int infiniteLoopCounter = 0;
 
 			//Get loopinfo
   			LoopInfo &LI = getAnalysis<LoopInfo>();
@@ -72,6 +73,7 @@ namespace {
 			
 
 			do{
+				infiniteLoopCounter++;
 				changed = 0;
 				int prevK = 0;
 				int k=0;
@@ -213,7 +215,7 @@ namespace {
 						}
 					}
 				}
-			}while (changed);
+			}while (changed && infiniteLoopCounter<10000);
 
 			//Print
 			for (int z = 0; z<=count;z++){
