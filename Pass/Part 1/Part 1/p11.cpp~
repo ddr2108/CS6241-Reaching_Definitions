@@ -115,12 +115,10 @@ namespace {
 							if (newInstr==i){
 								//Copy
 								for (int j = 0; j<count2;j++){
-									//Copy if reachdig is passed
 									if (reachDef[(p-1)*count2+j] >0 && reachDef[p*count2+j] == 0){
 										reachDef[p*count2+j] = 3;
 										changed = 1; 
 									}
-									//If it was deleted from reach, delete from following
 									if (reachDef[(p-1)*count2+j] == -1 && reachDef[p*count2+j] != -1 && reachDef[p*count2+j] <2){
 										reachDef[p*count2+j] = -1;
 										changed = 1; 
@@ -204,7 +202,6 @@ namespace {
 											reachDef[a*count2+b]=1;
 											changed = 1;
 										} 
-			
 										if(reachDef[p*count2+b]==-1 && reachDef[a*count2+b] != -1 && reachDef[a*count2+b] <2){
 											reachDef[a*count2+b]=-1;
 											changed = 1;
